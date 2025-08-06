@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estadísticas - Juegos Olímpicos Martínez</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Estilos para el botón de reiniciar contadores */
+    #btnReiniciarContadores {
+      background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+      transition: all 0.3s ease;
+      margin-left: 15px;
+    }
+    
+    #btnReiniciarContadores:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+      background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+    }
+    
+    #btnReiniciarContadores i {
+      font-size: 1.1em;
+    }
+    
+    .achievements-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    :root {
+      /* Colores para logros */
+      --logro-oro-fondo: #fff9c4;
+      --logro-oro-borde: #ffd700;
+      --logro-plata-fondo: #e6e6e6;
+      --logro-plata-borde: #acacac;
+      --logro-bronce-fondo: #ffecb3;
+      --logro-bronce-borde: #cd7f32;
+      --logro-verde-fondo: #e8f5e9;
+      --logro-verde-borde: #4caf50;
+      --logro-azul-fondo: #e3f2fd;
+      --logro-azul-borde: #2196f3;
+      --logro-morado-fondo: #f3e5f5;
+      --logro-morado-borde: #9c27b0;
+    }
+
+    .stats-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    /* Estilos para los logros */
+    .logro {
+      display: flex;
+      align-items: center;
+      background: var(--logro-oro-fondo);
+      border-left: 4px solid var(--logro-oro-borde);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 10px;
+    }
+    
+    .logro-icono {
+      font-size: 2rem;
+      margin-right: 1rem;
+      min-width: 50px;
+      text-align: center;
+    }
+    
+    .logro-contenido {
+      flex: 1;
+    }
+    
+    .logro h3 {
+      margin: 0 0 0.5rem 0;
+      color: #343a40;
+    }
+    
+    .logro p {
+      margin: 0 0 0.5rem 0;
+      color: #6c757d;
+    }
+    
+    .medal-count {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    
+    .medal-count span {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-weight: 600;
+    }
+    
+    .gold { color: #ffc107; }
+    .silver { color: #c0c0c0; }
+    .bronze { color: #cd7f32; }
+    
+    .no-logros {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #6c757d;
+    }
+    .stat-card h2 {
+      color: var(--blue);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .achievements-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid #eee;
+    }
+    
+    .btn-secondary {
+      background: #f8f9fa;
+      color: #495057;
+      border: 1px solid #dee2e6;
+      border-radius: 50px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: #e9ecef;
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary i {
+      font-size: 0.9em;
+    }
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin: 20px 0;
+    }
+    .medal-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .medal-stat {
+      text-align: center;
+      padding: 1rem;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .medal-stat.gold { background: linear-gradient(135deg, #FFD700, #FFA500); }
+    .medal-stat.silver { background: linear-gradient(135deg, #C0C0C0, #A9A9A9); }
+    .medal-stat.bronze { background: linear-gradient(135deg, #CD7F32, #8B4513); }
+    .medal-stat .count {
+      font-size: 2rem;
+      margin: 0.5rem 0;
+    }
+    .top-moments {
+      list-style: none;
+      padding: 0;
+    }
+    .moment {
+      background: #f8f9fa;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .moment .medal {
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+      color: white;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
+    .moment .medal.gold { background: #FFD700; }
+    .moment .medal.silver { background: #C0C0C0; }
+    .moment .medal.bronze { background: #CD7F32; }
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 2rem 0;
+      padding: 0.8rem 1.8rem;
+      background: linear-gradient(135deg, var(--blue) 0%, #1e88e5 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(41, 182, 246, 0.3);
+      border: none;
+      font-size: 1.05rem;
+    }
+    
+    .btn-back:hover {
+      background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 20px rgba(41, 182, 246, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="main-title">Estadísticas</h1>
+  </header>
+  
+  <main class="stats-container">
+    <a href="index.html" class="btn-back">← Volver al Ranking</a>
+    
+    <div class="stat-card">
+      <h2>📊 Distribución de Medallas</h2>
+      <div class="chart-container">
+        <canvas id="medalsChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <h2>🏅 Total de Medallas</h2>
+      <div class="medal-stats">
+        <div class="medal-stat gold">
+          <span>Oro</span>
+          <div class="count" id="totalGold">0</div>
+          <span>medallas</span>
+        </div>
+        <div class="medal-stat silver">
+          <span>Plata</span>
+          <div class="count" id="totalSilver">0</div>
+          <span>medallas</span>
+        </div>
+        <div class="medal-stat bronze">
+          <span>Bronce</span>
+          <div class="count" id="totalBronze">0</div>
+          <span>medallas</span>
+        </div>
+      </div>
+    </div>
+    
+    <section class="stat-card">
+        <div class="achievements-header">
+          <h2>🏆 Logros Destacados</h2>
+          <button id="btnReiniciarContadores" class="btn-secondary" title="Reiniciar contadores de logros">
+            <i class="fas fa-sync-alt"></i> Reiniciar Contadores
+          </button>
+        </div>
+        <div id="achievementsContainer">
+          <!-- Los logros se insertarán aquí dinámicamente -->
+        </div>
+      </section>
+    
+    <a href="index.html" class="btn-back">← Volver al Ranking</a>
+  </main>
+
+  <footer>
+    <br><br>
+    <center><p> 2025 Juegos Olímpicos de Martinez | Página oficial</p></center>
+    <br>
+  </footer>
+
+  <script>
+    // Función para reiniciar los contadores de logros
+    function reiniciarContadores() {
+      showConfirm('¿Estás seguro de que deseas reiniciar todos los contadores de logros?\n\n⚠️ Esta acción eliminará el historial de posiciones subidas, el historial de cambios de primer puesto, el registro de medallas (incluyendo rachas de oros), los logros desbloqueados y otros contadores internos.\n\nEsta acción no se puede deshacer.', function(confirmed) {
+        if (confirmed) {
+          // Eliminar el historial de mejoras
+          localStorage.removeItem('mejorasTotales');
+          // Eliminar el historial de clasificaciones
+          localStorage.removeItem('historialClasificacion');
+          // Eliminar el historial de cambios de primer puesto
+          localStorage.removeItem('historialPrimerPuesto');
+          // Eliminar el historial de fechas de medallas (afecta a rachas de oros)
+          localStorage.removeItem('medalDates');
+          // Eliminar el logro de "De cero a cien"
+          localStorage.removeItem('cambioDeSuerte');
+          // Eliminar logros desbloqueados
+          localStorage.removeItem('unlockedAchievements');
+          // Eliminar logros de "El Diablo" y "Número de la Suerte"
+          localStorage.removeItem('ganadoresNumeroSuerte');
+          localStorage.removeItem('ganadoresElDiablo');
+          // Recargar la página para actualizar la visualización
+          window.location.reload();
+        }
+      });
+    }
+    
+    // Función para mostrar ventana de confirmación personalizada
+    function showConfirm(message, callback) {
+      // Crear elementos del modal
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      
+      const content = document.createElement('div');
+      content.className = 'modal-content';
+      content.style.maxWidth = '400px';
+      content.style.padding = '20px';
+      content.style.textAlign = 'center';
+      
+      // Añadir mensaje
+      const messageEl = document.createElement('p');
+      messageEl.textContent = message;
+      messageEl.style.marginBottom = '20px';
+      messageEl.style.whiteSpace = 'pre-line';
+      
+      // Crear botones
+      const btnContainer = document.createElement('div');
+      btnContainer.style.display = 'flex';
+      btnContainer.style.justifyContent = 'center';
+      btnContainer.style.gap = '10px';
+      
+      const btnOk = document.createElement('button');
+      btnOk.textContent = 'Aceptar';
+      btnOk.className = 'btn';
+      btnOk.style.backgroundColor = '#2196F3';
+      btnOk.style.color = 'white';
+      
+      const btnCancel = document.createElement('button');
+      btnCancel.textContent = 'Cancelar';
+      btnCancel.className = 'btn';
+      btnCancel.style.backgroundColor = '#607D8B';
+      btnCancel.style.color = 'white';
+      
+      // Añadir manejadores de eventos
+      btnOk.onclick = function() {
+        document.body.removeChild(modal);
+        callback(true);
+      };
+      
+      btnCancel.onclick = function() {
+        document.body.removeChild(modal);
+        callback(false);
+      };
+      
+      // Construir el modal
+      btnContainer.appendChild(btnCancel);
+      btnContainer.appendChild(btnOk);
+      content.appendChild(messageEl);
+      content.appendChild(btnContainer);
+      modal.appendChild(content);
+      
+      // Añadir estilos al modal
+      Object.assign(modal.style, {
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: '1000'
+      });
+      
+      Object.assign(content.style, {
+        backgroundColor: 'white',
+        padding: '20px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+      });
+      
+      // Añadir el modal al documento
+      document.body.appendChild(modal);
+    }
+
+    // Configurar el botón de reiniciar contadores
+    document.addEventListener('DOMContentLoaded', function() {
+      const btnReiniciar = document.getElementById('btnReiniciarContadores');
+      if (btnReiniciar) {
+        // Mostrar siempre el botón
+        btnReiniciar.style.display = 'flex';
+        
+        // Asignar el manejador de eventos
+        btnReiniciar.addEventListener('click', reiniciarContadores);
+      }
+      // Cargar datos desde localStorage
+      const participants = JSON.parse(localStorage.getItem('olimpMartinez2025')) || [];
+      
+      // Calcular totales
+      const totals = participants.reduce((acc, p) => {
+        acc.gold += p.gold || 0;
+        acc.silver += p.silver || 0;
+        acc.bronze += p.bronze || 0;
+        return acc;
+      }, { gold: 0, silver: 0, bronze: 0 });
+      
+      // Actualizar contadores
+      document.getElementById('totalGold').textContent = totals.gold;
+      document.getElementById('totalSilver').textContent = totals.silver;
+      document.getElementById('totalBronze').textContent = totals.bronze;
+      
+      // Gráfico de distribución
+      const ctx = document.getElementById('medalsChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Oro', 'Plata', 'Bronce'],
+          datasets: [{
+            label: 'Total de Medallas',
+            data: [totals.gold, totals.silver, totals.bronze],
+            backgroundColor: [
+              'rgba(255, 215, 0, 0.7)',
+              'rgba(192, 192, 192, 0.7)',
+              'rgba(205, 127, 50, 0.7)'
+            ],
+            borderColor: [
+              'rgba(255, 215, 0, 1)',
+              'rgba(192, 192, 192, 1)',
+              'rgba(205, 127, 50, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+      
+      // Función para cargar logros destacados
+      function cargarLogrosDestacados() {
+        const container = document.getElementById('achievementsContainer');
+        container.innerHTML = '';
+        
+        // Obtener datos
+        const participantes = JSON.parse(localStorage.getItem('olimpMartinez2025') || '[]');
+        const medallas = JSON.parse(localStorage.getItem('medalDates') || '[]');
+        
+        // 1. Encontrar al participante con más medallas totales
+        const participantesConTotales = participantes.map(p => ({
+          nombre: p.name,
+          oro: p.gold || 0,
+          plata: p.silver || 0,
+          bronce: p.bronze || 0,
+          total: (p.gold || 0) + (p.silver || 0) + (p.bronze || 0)
+        })).sort((a, b) => b.total - a.total);
+        
+        // Función para formatear lista de nombres
+        function formatearNombres(nombres) {
+          if (!nombres || nombres.length === 0) return '';
+          if (nombres.length === 1) return nombres[0];
+          if (nombres.length === 2) return `${nombres[0]} y ${nombres[1]}`;
+          return nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1];
+        }
+
+        // 2. Encontrar participantes que solo tengan medallas de oro
+        const soloOro = participantesConTotales.filter(p => 
+          p.oro > 0 && p.plata === 0 && p.bronce === 0
+        );
+        
+        // 3. Encontrar participantes con equilibrio perfecto (mismo número de oros, platas y bronces)
+        const equilibrioPerfecto = participantesConTotales.filter(p => 
+          p.oro > 0 && p.oro === p.plata && p.oro === p.bronce
+        );
+
+        // 4. Calcular racha de oros seguidos
+        function calcularRachaOros(medallas) {
+          // Ordenar todas las medallas por timestamp (ya incluye las de edición)
+          const medallasOrdenadas = [...medallas].sort((a, b) => a.timestamp - b.timestamp);
+          
+          const rachasActuales = {}; // Raacha actual de cada participante
+          const maxRachas = {};     // Mejor racha de cada participante
+          
+          // Primero, inicializar todos los participantes con racha 0
+          const participantes = [...new Set(medallas.map(m => m.participant))];
+          participantes.forEach(p => {
+            rachasActuales[p] = 0;
+            maxRachas[p] = 0;
+          });
+          
+          // Procesar cada medalla en orden cronológico
+          medallasOrdenadas.forEach(medal => {
+            const participante = medal.participant;
+            
+            if (medal.type === 'gold') {
+              // Si es oro, incrementar la racha actual
+              rachasActuales[participante] = (rachasActuales[participante] || 0) + 1;
+              
+              // Actualizar la racha máxima si es necesario
+              if (rachasActuales[participante] > maxRachas[participante]) {
+                maxRachas[participante] = rachasActuales[participante];
+              }
+              
+              // Reiniciar rachas de los otros participantes
+              Object.keys(rachasActuales).forEach(p => {
+                if (p !== participante) {
+                  rachasActuales[p] = 0;
+                }
+              });
+            } else {
+              // Si no es oro, reiniciar la racha de este participante
+              rachasActuales[participante] = 0;
+            }
+          });
+          
+          // Encontrar la mejor racha entre todos los participantes
+          let mejorRacha = 0;
+          let mejoresParticipantes = [];
+          
+          Object.entries(maxRachas).forEach(([participante, racha]) => {
+            if (racha > mejorRacha) {
+              mejorRacha = racha;
+              mejoresParticipantes = [participante];
+            } else if (racha === mejorRacha && racha > 0) {
+              mejoresParticipantes.push(participante);
+            }
+          });
+          
+          return {
+            participantes: mejoresParticipantes,
+            racha: mejorRacha
+          };
+        }
+        
+        const rachaOros = calcularRachaOros(medallas);
+        
+        // 5. Logro "Actor Secundario" - Para quien tenga más medallas de plata
+        const actorSecundario = [];
+        
+        // Encontrar el número máximo de medallas de plata
+        const maxPlata = Math.max(...participantesConTotales.map(p => p.plata));
+        
+        // Encontrar todos los participantes con ese máximo de medallas de plata
+        participantesConTotales.forEach(p => {
+          if (p.plata === maxPlata && p.plata > 0) {
+            actorSecundario.push({
+              nombre: p.nombre,
+              plata: p.plata
+            });
+          }
+        });
+        
+        // Si hay al menos un participante con medallas de plata, mostrar el logro
+        if (actorSecundario.length > 0) {
+          const logroActorSecundario = document.createElement('div');
+          logroActorSecundario.className = 'logro';
+          logroActorSecundario.style.background = 'var(--logro-azul-fondo)';
+          logroActorSecundario.style.borderLeft = '4px solid var(--logro-azul-borde)';
+          
+          // Formatear la frase según el número de ganadores
+          const nombres = actorSecundario.map(p => p.nombre);
+          const textoNombres = formatearNombres(nombres);
+          const cantidadPlata = actorSecundario[0].plata;
+          
+          logroActorSecundario.innerHTML = `
+            <div class="logro-icono">🎭</div>
+            <div class="logro-contenido">
+              <h3>Actor Secundario</h3>
+              <p>${textoNombres} ${actorSecundario.length > 1 ? 'tienen' : 'tiene'} más medallas de plata (${cantidadPlata})</p>
+              <div class="participantes-ganadores">
+                ${actorSecundario.map(p => `
+                  <div class="participante">
+                    <strong>${p.nombre}:</strong>
+                    <span class="silver">🥈 ${p.plata}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+          
+          container.appendChild(logroActorSecundario);
+        }
+        
+        // 5. Agrupar participantes por logros de "Estilo Único"
+        const estiloUnico = {
+          oro: participantesConTotales.filter(p => p.oro > 0 && p.plata === 0 && p.bronce === 0),
+          plata: participantesConTotales.filter(p => p.plata > 0 && p.oro === 0 && p.bronce === 0),
+          bronce: participantesConTotales.filter(p => p.bronce > 0 && p.oro === 0 && p.plata === 0)
+        };
+        
+        // 5. Logro "Comeback del año" - Recuperar el primer puesto después de perderlo
+        const historialPrimerPuesto = JSON.parse(localStorage.getItem('historialPrimerPuesto') || '{}');
+        let maxVecesRecuperado = 0;
+        const mejoresComebacks = [];
+        
+        // Primero encontrar el número máximo de recuperaciones
+        Object.entries(historialPrimerPuesto).forEach(([nombre, datos]) => {
+            if (datos.vecesRecuperado > 0) {
+                if (datos.vecesRecuperado > maxVecesRecuperado) {
+                    maxVecesRecuperado = datos.vecesRecuperado;
+                }
+            }
+        });
+        
+        // Luego encontrar a todos los que tengan ese máximo
+        Object.entries(historialPrimerPuesto).forEach(([nombre, datos]) => {
+            if (datos.vecesRecuperado === maxVecesRecuperado && maxVecesRecuperado > 0) {
+                mejoresComebacks.push({
+                    nombre: nombre,
+                    veces: datos.vecesRecuperado,
+                    ultimaVez: datos.ultimaRecuperacion
+                });
+            }
+        });
+        
+        // Ordenar por la fecha de la última recuperación (más reciente primero)
+        mejoresComebacks.sort((a, b) => new Date(b.ultimaVez) - new Date(a.ultimaVez));
+        
+        // 6. Encontrar al Rey de la Montaña (primer puesto en la clasificación)
+        const reyMontana = [];
+        if (participantesConTotales.length > 0) {
+          // Ordenar por clasificación (oro > plata > bronce)
+          const clasificados = [...participantesConTotales].sort((a, b) => {
+            if (a.oro !== b.oro) return b.oro - a.oro;
+            if (a.plata !== b.plata) return b.plata - a.plata;
+            return b.bronce - a.bronce;
+          });
+          
+          // Tomar el/los primeros puestos
+          const primerPuesto = clasificados[0];
+          reyMontana.push(primerPuesto);
+          
+          // Verificar si hay empate en el primer puesto
+          for (let i = 1; i < clasificados.length; i++) {
+            if (clasificados[i].oro === primerPuesto.oro &&
+                clasificados[i].plata === primerPuesto.plata &&
+                clasificados[i].bronce === primerPuesto.bronce) {
+              reyMontana.push(clasificados[i]);
+            } else {
+              break;
+            }
+          }
+        }
+        
+        // 6. Encontrar al participante con más posiciones subidas en total (Escalador Profesional)
+        let mejorMejora = { nombre: null, mejoraTotal: 0, posicionActual: 0 };
+        try {
+          const mejorasTotales = JSON.parse(localStorage.getItem('mejorasTotales') || '{}');
+          const historial = JSON.parse(localStorage.getItem('historialClasificacion') || '[]');
+          const clasificacionActual = historial.length > 0 ? 
+            historial[historial.length - 1].clasificacion : [];
+          
+          // Encontrar al participante con más posiciones subidas en total
+          Object.entries(mejorasTotales).forEach(([nombre, mejoraTotal]) => {
+            if (mejoraTotal > mejorMejora.mejoraTotal) {
+              const posicionActual = clasificacionActual.find(p => p.nombre === nombre)?.posicion || 0;
+              mejorMejora = {
+                nombre,
+                mejoraTotal: parseInt(mejoraTotal),
+                posicionActual: posicionActual
+              };
+            }
+          });
+        } catch (e) {
+          console.error('Error al calcular mejoras de clasificación:', e);
+        }
+        
+        // Si hay participantes con medallas, mostrar el/los máximos ganadores
+        if (participantesConTotales.length > 0 && participantesConTotales[0].total > 0) {
+          const maxTotal = participantesConTotales[0].total;
+          const maximosGanadores = participantesConTotales.filter(p => p.total === maxTotal);
+          
+          // Crear elemento de logro para el/los máximos ganadores
+          const logro = document.createElement('div');
+          logro.className = 'logro';
+          
+          if (maximosGanadores.length === 1) {
+            const ganador = maximosGanadores[0];
+            logro.innerHTML = `
+              <div class="logro-icono">👑</div>
+              <div class="logro-contenido">
+                <h3>Rey de las medallas</h3>
+                <p>${ganador.nombre} lidera con ${ganador.total} medallas en total</p>
+                <div class="medal-count">
+                  <span class="gold">🥇 ${ganador.oro}</span>
+                  <span class="silver">🥈 ${ganador.plata}</span>
+                  <span class="bronze">🥉 ${ganador.bronce}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            const nombres = maximosGanadores.map(g => g.nombre);
+            const textoNombres = formatearNombres(nombres);
+            
+            logro.innerHTML = `
+              <div class="logro-icono">👑</div>
+              <div class="logro-contenido">
+                <h3>Reyes de las medallas</h3>
+                <p>${textoNombres} lideran con ${maxTotal} medallas cada uno</p>
+                <div class="participantes-ganadores">
+                  ${maximosGanadores.map(g => `
+                    <div class="participante">
+                      <strong>${g.nombre}:</strong>
+                      <span class="gold">🥇 ${g.oro}</span>
+                      <span class="silver">🥈 ${g.plata}</span>
+                      <span class="bronze">🥉 ${g.bronce}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+          }
+          
+          container.appendChild(logro);
+        }
+        
+        // Mostrar logro "Comeback del año" si hay datos
+        if (mejoresComebacks.length > 0) {
+            const logroComeback = document.createElement('div');
+            logroComeback.className = 'logro';
+            logroComeback.style.background = 'var(--logro-azul-fondo)';
+            logroComeback.style.borderLeft = '4px solid var(--logro-azul-borde)';
+            
+            // Si hay un solo ganador
+            if (mejoresComebacks.length === 1) {
+                const mejor = mejoresComebacks[0];
+                const fecha = new Date(mejor.ultimaVez).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                logroComeback.innerHTML = `
+                    <div class="logro-icono">🐦</div>
+                    <div class="logro-contenido">
+                        <h3>Espíritu de Fénix</h3>
+                        <p>${mejor.nombre} ha recuperado el primer puesto ${mejor.veces} ${mejor.veces === 1 ? 'vez' : 'veces'}</p>
+                        <p class="fecha-pequena">Última recuperación: ${fecha}</p>
+                    </div>
+                `;
+            } 
+            // Si hay empate
+            else {
+                const nombres = mejoresComebacks.map(c => c.nombre);
+                const textoNombres = formatearNombres(nombres);
+                const veces = mejoresComebacks[0].veces;
+                const fecha = new Date(mejoresComebacks[0].ultimaVez).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                logroComeback.innerHTML = `
+                    <div class="logro-icono">🐦</div>
+                    <div class="logro-contenido">
+                        <h3>Espíritu de Fénix</h3>
+                        <p>${textoNombres} han recuperado el primer puesto ${veces} ${veces === 1 ? 'vez' : 'veces'}</p>
+                        <p class="fecha-pequena">Última recuperación: ${fecha}</p>
+                        <div class="participantes-ganadores">
+                            ${mejoresComebacks.map(c => `
+                                <div class="participante">
+                                    <strong>${c.nombre}:</strong>
+                                    <span>${c.veces} ${c.veces === 1 ? 'vez' : 'veces'}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.appendChild(logroComeback);
+        }
+        
+        // Mostrar logro de racha de oros si hay participantes que cumplan el criterio
+        if (rachaOros.racha > 1) {
+          const logroRachaOros = document.createElement('div');
+          logroRachaOros.className = 'logro';
+          logroRachaOros.style.background = 'var(--logro-oro-fondo)';
+          logroRachaOros.style.borderLeft = '4px solid var(--logro-oro-borde)';
+          
+          const textoNombres = formatearNombres(rachaOros.participantes);
+          
+          logroRachaOros.innerHTML = `
+            <div class="logro-icono">🌡️</div>
+            <div class="logro-contenido">
+              <h3>Fiebre del Oro</h3>
+              <p>${textoNombres} ${rachaOros.participantes.length > 1 ? 'tienen' : 'tiene'} la mayor racha de oros consecutivos con ${rachaOros.racha} oros seguidos sin que nadie más ganara un oro entre medias</p>
+            </div>
+          `;
+          container.appendChild(logroRachaOros);
+        }
+        
+        // Mostrar logro "Pureza Dorada" si hay participantes que cumplan el criterio
+        if (soloOro.length > 0) {
+          const logroOro = document.createElement('div');
+          logroOro.className = 'logro';
+          logroOro.style.background = 'var(--logro-oro-fondo)';
+          logroOro.style.borderLeft = '4px solid var(--logro-oro-borde)';
+          
+          const nombres = soloOro.map(p => p.nombre);
+          const textoNombres = formatearNombres(nombres);
+          const totalOros = soloOro.reduce((sum, p) => sum + p.oro, 0);
+          
+          logroOro.innerHTML = `
+            <div class="logro-icono">🤴</div>
+            <div class="logro-contenido">
+              <h3>Rey Midas</h3>
+              <p>${textoNombres} ${soloOro.length > 1 ? 'solo tienen' : 'solo tiene'} medallas de oro (${totalOros} en total)</p>
+              <div class="participantes-ganadores">
+                ${soloOro.map(p => `
+                  <div class="participante">
+                    <strong>${p.nombre}:</strong>
+                    <span class="gold">🥇 ${p.oro} oro</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+          container.appendChild(logroOro);
+        }
+
+        // Logro "Número de la Suerte" - 7 medallas de cada tipo
+        const numeroSuerte = participantesConTotales.filter(p => 
+          p.oro === 7 && p.plata === 7 && p.bronce === 7
+        );
+        
+        // Obtener ganadores anteriores del localStorage o inicializar array vacío
+        const ganadoresNumeroSuerte = JSON.parse(localStorage.getItem('ganadoresNumeroSuerte') || '[]');
+        
+        // Añadir nuevos ganadores si no están ya en la lista
+        numeroSuerte.forEach(ganador => {
+          if (!ganadoresNumeroSuerte.includes(ganador.nombre)) {
+            ganadoresNumeroSuerte.push(ganador.nombre);
+          }
+        });
+        
+        // Guardar en localStorage
+        localStorage.setItem('ganadoresNumeroSuerte', JSON.stringify(ganadoresNumeroSuerte));
+        
+        // Mostrar logro si hay ganadores
+        if (ganadoresNumeroSuerte.length > 0) {
+          const logroSuerte = document.createElement('div');
+          logroSuerte.className = 'logro';
+          logroSuerte.style.background = 'var(--logro-verde-fondo)';
+          logroSuerte.style.borderLeft = '4px solid var(--logro-verde-borde)';
+          
+          const textoNombres = formatearNombres(ganadoresNumeroSuerte);
+          
+          logroSuerte.innerHTML = `
+            <div class="logro-icono">🍀</div>
+            <div class="logro-contenido">
+              <h3>Número de la Suerte</h3>
+              <p>¡${textoNombres} ${ganadoresNumeroSuerte.length > 1 ? 'han' : 'ha'} conseguido el número de la suerte! 7 medallas de cada tipo (🥇7 🥈7 🥉7)</p>
+              <div class="participantes-ganadores">
+                ${ganadoresNumeroSuerte.map(nombre => `
+                `).join('')}
+              </div>
+            </div>
+          `;
+          container.appendChild(logroSuerte);
+        }
+        
+        // Logro "El Diablo" - 6 medallas de cada tipo
+        const elDiablo = participantesConTotales.filter(p => 
+          p.oro === 6 && p.plata === 6 && p.bronce === 6
+        );
+        
+        // Obtener ganadores anteriores del localStorage o inicializar array vacío
+        const ganadoresElDiablo = JSON.parse(localStorage.getItem('ganadoresElDiablo') || '[]');
+        
+        // Añadir nuevos ganadores si no están ya en la lista
+        elDiablo.forEach(ganador => {
+          if (!ganadoresElDiablo.includes(ganador.nombre)) {
+            ganadoresElDiablo.push(ganador.nombre);
+          }
+        });
+        
+        // Guardar en localStorage
+        localStorage.setItem('ganadoresElDiablo', JSON.stringify(ganadoresElDiablo));
+        
+        // Mostrar logro si hay ganadores
+        if (ganadoresElDiablo.length > 0) {
+          const logroDiablo = document.createElement('div');
+          logroDiablo.className = 'logro';
+          logroDiablo.style.background = 'var(--logro-morado-fondo)';
+          logroDiablo.style.borderLeft = '4px solid var(--logro-morado-borde)';
+          
+          const textoNombres = formatearNombres(ganadoresElDiablo);
+          
+          logroDiablo.innerHTML = `
+            <div class="logro-icono">😈</div>
+            <div class="logro-contenido">
+              <h3>El Diablo</h3>
+              <p>¡${textoNombres} ${ganadoresElDiablo.length > 1 ? 'han' : 'ha'} conseguido ser el diablo! 6 medallas de cada tipo (🥇6 🥈6 🥉6)</p>
+              <div class="participantes-ganadores">
+                ${ganadoresElDiablo.map(nombre => `
+                `).join('')}
+              </div>
+            </div>
+          `;
+          container.appendChild(logroDiablo);
+        }
+
+
+
+        // Mostrar logro "Equilibrio Perfecto" si hay participantes que cumplan el criterio
+        if (equilibrioPerfecto.length > 0) {
+          const logroEquilibrio = document.createElement('div');
+          logroEquilibrio.className = 'logro';
+          logroEquilibrio.style.background = 'var(--logro-verde-fondo)';
+          logroEquilibrio.style.borderLeft = '4px solid var(--logro-verde-borde)';
+          
+          const nombres = equilibrioPerfecto.map(p => p.nombre);
+          const textoNombres = formatearNombres(nombres);
+          const cantidad = equilibrioPerfecto[0].oro; // Todos tienen la misma cantidad
+          
+          logroEquilibrio.innerHTML = `
+            <div class="logro-icono">⚖️</div>
+            <div class="logro-contenido">
+              <h3>Equilibrio Perfecto</h3>
+              <p>${textoNombres} ${equilibrioPerfecto.length > 1 ? 'mantienen' : 'mantiene'} un equilibrio perfecto con ${cantidad} medallas de cada tipo</p>
+              <div class="participantes-ganadores">
+                ${equilibrioPerfecto.map(p => `
+                  <div class="participante">
+                    <strong>${p.nombre}:</strong>
+                    <span class="gold">🥇 ${p.oro}</span>
+                    <span class="silver">🥈 ${p.plata}</span>
+                    <span class="bronze">🥉 ${p.bronce}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+          container.appendChild(logroEquilibrio);
+        }
+        
+        // 7. Encontrar participantes que tengan al menos una medalla de cada tipo (Coleccionista)
+        const coleccionistas = participantesConTotales.filter(p => 
+          p.oro > 0 && p.plata > 0 && p.bronce > 0
+        );
+        
+        // Mostrar logro "Coleccionista"
+        if (coleccionistas.length > 0) {
+          const logroColeccionista = document.createElement('div');
+          logroColeccionista.className = 'logro';
+          logroColeccionista.style.background = 'var(--logro-oro-fondo)';
+          logroColeccionista.style.borderLeft = '4px solid var(--logro-oro-borde)';
+          
+          const nombres = coleccionistas.map(p => p.nombre);
+          const textoNombres = formatearNombres(nombres);
+          
+          logroColeccionista.innerHTML = `
+            <div class="logro-icono">🏆</div>
+            <div class="logro-contenido">
+              <h3>Coleccionista</h3>
+              <p>${textoNombres} ${coleccionistas.length > 1 ? 'han' : 'ha'} completado su colección con al menos una medalla de cada tipo</p>
+              <div class="participantes-ganadores">
+                ${coleccionistas.map(p => `
+                  <div class="participante">
+                    <strong>${p.nombre}:</strong>
+                    <span class="gold">🥇 ${p.oro}</span>
+                    <span class="silver">🥈 ${p.plata}</span>
+                    <span class="bronze">🥉 ${p.bronce}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+          container.appendChild(logroColeccionista);
+        }
+        
+        // 8. Mostrar logro "De Cero a Cien" (pasar de último a primero)
+        const cambiosDeSuerte = JSON.parse(localStorage.getItem('cambioDeSuerte') || '{}');
+        const ganadoresDeCeroACien = Object.entries(cambiosDeSuerte)
+          .filter(([_, logrado]) => logrado)
+          .map(([nombre]) => {
+            const participante = participantesConTotales.find(p => p.nombre === nombre);
+            return {
+              nombre,
+              oro: participante?.oro || 0,
+              plata: participante?.plata || 0,
+              bronce: participante?.bronce || 0
+            };
+          });
+          
+        if (ganadoresDeCeroACien.length > 0) {
+          const logroDeCeroACien = document.createElement('div');
+          logroDeCeroACien.className = 'logro';
+          logroDeCeroACien.style.background = 'var(--logro-verde-fondo)';
+          logroDeCeroACien.style.borderLeft = '4px solid var(--logro-verde-borde)';
+          
+          const nombres = ganadoresDeCeroACien.map(p => p.nombre);
+          const textoNombres = formatearNombres(nombres);
+          
+          logroDeCeroACien.innerHTML = `
+            <div class="logro-icono">🚀</div>
+            <div class="logro-contenido">
+              <h3>De Cero a Cien</h3>
+              <p>${textoNombres} ${nombres.length > 1 ? 'han' : 'ha'} pasado de último a primero en la clasificación</p>
+              <div class="participantes-ganadores">
+                ${ganadoresDeCeroACien.map(p => `
+                  <div class="participante">
+                    <strong>${p.nombre}:</strong>
+                    <span class="gold">🥇 ${p.oro}</span>
+                    <span class="silver">🥈 ${p.plata}</span>
+                    <span class="bronze">🥉 ${p.bronce}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+          container.appendChild(logroDeCeroACien);
+        }
+        
+        // 9. Mostrar logro "Estrella Fugaz" (más medallas en un solo día)
+        const fechasMedallas = JSON.parse(localStorage.getItem('medalDates') || '[]');
+        
+        // Contar medallas por participante y por día
+        const medallasPorDia = {};
+        
+        fechasMedallas.forEach(medal => {
+          if (!medal.date || !medal.participant) return;
+          
+          const key = `${medal.participant}-${medal.date}`;
+          if (!medallasPorDia[key]) {
+            medallasPorDia[key] = {
+              participante: medal.participant,
+              fecha: medal.date,
+              cantidad: 0
+            };
+          }
+          medallasPorDia[key].cantidad++;
+        });
+        
+        // Encontrar el récord de más medallas en un día
+        const records = Object.values(medallasPorDia);
+        if (records.length > 0) {
+          // Ordenar por cantidad de medallas (de mayor a menor)
+          records.sort((a, b) => b.cantidad - a.cantidad);
+          
+          const maxMedallas = records[0].cantidad;
+          const mejoresDias = records.filter(r => r.cantidad === maxMedallas);
+          
+          // Crear el elemento del logro
+          const logroEstrellaFugaz = document.createElement('div');
+          logroEstrellaFugaz.className = 'logro';
+          logroEstrellaFugaz.style.background = 'var(--logro-morado-fondo, #f3e5f5)';
+          logroEstrellaFugaz.style.borderLeft = '4px solid var(--logro-morado-borde, #9c27b0)';
+          
+          // Formatear la fecha
+          const fecha = new Date(mejoresDias[0].fecha);
+          const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+          });
+          
+          // Obtener los nombres de los participantes con el mismo récord
+          const nombres = [...new Set(mejoresDias.map(d => d.participante))];
+          const textoNombres = formatearNombres(nombres);
+          
+          logroEstrellaFugaz.innerHTML = `
+            <div class="logro-icono">☄️</div>
+            <div class="logro-contenido">
+              <h3>Estrella Fugaz</h3>
+              <p>${textoNombres} ${nombres.length > 1 ? 'han' : 'ha'} ganado ${maxMedallas} medallas en un solo día (${fechaFormateada})</p>
+            </div>
+          `;
+          container.appendChild(logroEstrellaFugaz);
+        }
+        
+        // 10. Mostrar logro "Rompecabezas" (Oro, Bronce, Plata en ese orden)
+        const unlockedAchievements = JSON.parse(localStorage.getItem('unlockedAchievements') || '{}');
+        const participantesConRompecabezas = [];
+        
+        // Buscar participantes que hayan desbloqueado el logro
+        Object.entries(unlockedAchievements).forEach(([nombre, logros]) => {
+          if (logros && logros.includes('puzzle')) {
+            const participante = participantesConTotales.find(p => p.nombre === nombre);
+            if (participante) {
+              participantesConRompecabezas.push({
+                nombre,
+                oro: participante.oro || 0,
+                plata: participante.plata || 0,
+                bronce: participante.bronce || 0
+              });
+            }
+          }
+        });
+        
+        if (participantesConRompecabezas.length > 0) {
+          const logroRompecabezas = document.createElement('div');
+          logroRompecabezas.className = 'logro';
+          logroRompecabezas.style.background = 'var(--logro-azul-fondo, #e3f2fd)';
+          logroRompecabezas.style.borderLeft = '4px solid var(--logro-azul-borde, #2196f3)';
+          
+          const nombres = participantesConRompecabezas.map(p => p.nombre);
+          const textoNombres = formatearNombres(nombres);
+          
+          logroRompecabezas.innerHTML = `
+            <div class="logro-icono">🧩</div>
+            <div class="logro-contenido">
+              <h3>Rompecabezas</h3>
+              <p>${textoNombres} ${nombres.length > 1 ? 'han' : 'ha'} completado el patrón de medallas: Oro, Bronce, Plata</p>
+              <div class="participantes-ganadores">
+                ${participantesConRompecabezas.map(p => `
+                  <div class="participante">
+                    <strong>${p.nombre}:</strong>
+                    <span class="gold">🥇 ${p.oro}</span>
+                    <span class="silver">🥈 ${p.plata}</span>
+                    <span class="bronze">🥉 ${p.bronce}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+          container.appendChild(logroRompecabezas);
+          
+          container.appendChild(logroEstrellaFugaz);
+        }
+        
+        // 9. Mostrar logros "Estilo Único" agrupados por tipo de medalla
+        Object.entries(estiloUnico).forEach(([tipo, participantes]) => {
+          if (participantes.length > 0) {
+            const logroEstiloUnico = document.createElement('div');
+            logroEstiloUnico.className = 'logro';
+            logroEstiloUnico.style.background = 'var(--logro-morado-fondo)';
+            logroEstiloUnico.style.borderLeft = '4px solid var(--logro-morado-borde)';
+            
+            const nombres = participantes.map(p => p.nombre);
+            const textoNombres = formatearNombres(nombres);
+            const total = participantes.reduce((sum, p) => sum + (p[tipo] || 0), 0);
+            
+            const icono = tipo === 'oro' ? '🥇' : (tipo === 'plata' ? '🥈' : '🥉');
+            const textoMedalla = tipo === 'oro' ? 'oro' : (tipo === 'plata' ? 'plata' : 'bronce');
+            const colorClase = tipo === 'oro' ? 'gold' : (tipo === 'plata' ? 'silver' : 'bronze');
+            
+            logroEstiloUnico.innerHTML = `
+              <div class="logro-icono">🎯</div>
+              <div class="logro-contenido">
+                <h3>Estilo Único - ${textoMedalla.charAt(0).toUpperCase() + textoMedalla.slice(1)}</h3>
+                <p>${textoNombres} ${participantes.length > 1 ? 'se especializan' : 'se especializa'} en medallas de ${textoMedalla} (${total} en total)</p>
+                <div class="participantes-ganadores">
+                  ${participantes.map(p => `
+                    <div class="participante">
+                      <strong>${p.nombre}:</strong>
+                      <span class="${colorClase}">${icono} ${p[tipo]} ${textoMedalla}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            container.appendChild(logroEstiloUnico);
+          }
+        });
+        
+        // Mostrar logro "Escalador Profesional" (más posiciones subidas en total)
+        if (mejorMejora.nombre && mejorMejora.mejoraTotal > 0) {
+          const logroMejora = document.createElement('div');
+          logroMejora.className = 'logro';
+          logroMejora.style.background = 'var(--logro-verde-fondo)';
+          logroMejora.style.borderLeft = '4px solid var(--logro-verde-borde)';
+          
+          let textoPosicion = '';
+          if (mejorMejora.posicionActual > 0) {
+            textoPosicion = ` (actualmente en el ${mejorMejora.posicionActual}º puesto)`;
+          }
+          
+          logroMejora.innerHTML = `
+            <div class="logro-icono">🧗</div>
+            <div class="logro-contenido">
+              <h3>Escalador Profesional</h3>
+              <p>${mejorMejora.nombre} ha subido más posiciones en total${textoPosicion}</p>
+              <div class="participante">
+                <strong>Total subidas:</strong>
+                <span class="green">+${mejorMejora.mejoraTotal} posiciones</span>
+              </div>
+            </div>
+          `;
+          
+          // Insertar después del Rey de la Montaña o al principio
+          if (container.firstChild) {
+            container.insertBefore(logroMejora, container.firstChild.nextSibling);
+          } else {
+            container.appendChild(logroMejora);
+          }
+        }
+        
+        // Mostrar logro "Rey de la Montaña" (líder actual)
+        if (reyMontana.length > 0) {
+          const logroReyMontana = document.createElement('div');
+          logroReyMontana.className = 'logro';
+          logroReyMontana.style.background = 'var(--logro-oro-fondo)';
+          logroReyMontana.style.borderLeft = '4px solid var(--logro-oro-borde)';
+          
+          if (reyMontana.length === 1) {
+            const lider = reyMontana[0];
+            logroReyMontana.innerHTML = `
+              <div class="logro-icono">🏔️</div>
+              <div class="logro-contenido">
+                <h3>Rey de la Montaña</h3>
+                <p>${lider.nombre} lidera la clasificación con ${lider.total} medallas en total</p>
+                <div class="medal-count">
+                  <span class="gold">🥇 ${lider.oro}</span>
+                  <span class="silver">🥈 ${lider.plata}</span>
+                  <span class="bronze">🥉 ${lider.bronce}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            const nombres = reyMontana.map(p => p.nombre);
+            const textoNombres = formatearNombres(nombres);
+            
+            logroReyMontana.innerHTML = `
+              <div class="logro-icono">🏔️</div>
+              <div class="logro-contenido">
+                <h3>Reyes de la Montaña</h3>
+                <p>${textoNombres} lideran la clasificación con ${reyMontana[0].total} medallas cada uno</p>
+                <div class="participantes-ganadores">
+                  ${reyMontana.map(p => `
+                    <div class="participante">
+                      <strong>${p.nombre}:</strong>
+                      <span class="gold">🥇 ${p.oro}</span>
+                      <span class="silver">🥈 ${p.plata}</span>
+                      <span class="bronze">🥉 ${p.bronce}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+          }
+          
+          // Insertar al principio de la lista de logros
+          if (container.firstChild) {
+            container.insertBefore(logroReyMontana, container.firstChild);
+          } else {
+            container.appendChild(logroReyMontana);
+          }
+        }
+        
+        // Mostrar mensaje si no hay logros para mostrar
+        if (container.children.length === 0) {
+          container.innerHTML = `
+            <div class="no-logros">
+              <p>¡Aún no hay suficientes datos para mostrar logros!</p>
+              <p>Empieza a asignar medallas a los participantes para ver sus logros destacados.</p>
+            </div>
+          `;
+        }
+        
+        // Mostrar datos de depuración en consola
+        console.log('=== DATOS DE DEPURACIÓN ===');
+        console.log('Participantes:', participantes);
+        console.log('Medallas registradas:', medallas);
+      }
+      
+      // Cargar logros al iniciar la página
+      cargarLogrosDestacados();
+    });
+  </script>
+
+</body>
+</html>
